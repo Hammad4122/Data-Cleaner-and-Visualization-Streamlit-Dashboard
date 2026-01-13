@@ -3,36 +3,49 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 
 def file_uploader():
-    uploaded_file = st.file_uploader(label="Upload a file", type = ["csv","xlsx","xls"])
-    if uploaded_file is not None:
-        file_name = uploaded_file.name
-        # --------- Checking File type ------------
-        if file_name.endswith(".csv"):
-            st.success("CSV file detected ✅")
-            return uploaded_file,"csv"
-        elif file_name.endswith(".xlsx") or file_name.endswith("xls"):
-            st.success("Excel file detected ✅")
-            return uploaded_file,"excel"
-        else:
-            st.warning("Unknown or unsupported file type ❓")
-            return None
-    else:
+    uploaded_file = st.file_uploader(
+        label="Upload a file",
+        type=["csv", "xlsx", "xls"]
+    )
+
+    if uploaded_file is None:
         return None
+
+    file_name = uploaded_file.name.lower()
+
+    if file_name.endswith(".csv"):
+        st.success("CSV file detected ✅")
+        return uploaded_file, "csv"
+
+    elif file_name.endswith(".xlsx") or file_name.endswith(".xls"):
+        st.success("Excel file detected ✅")
+        return uploaded_file, "excel"
+
+    else:
+        st.warning("Unknown or unsupported file type ❓")
+        return None
+
 
 def dataframe_converter():
     result = file_uploader()
     if result is None:
         return None
+
     file_address, file_type = result
+
     try:
         if file_type == "csv":
             df = pd.read_csv(file_address)
+
         elif file_type == "excel":
-            df = pd.read_excel(file_address)
+            df = pd.read_excel(file_address, engine="openpyxl")
+
+        return df  # ✅ only return if successful
+
     except Exception as e:
         st.error(f"Error loading file: {e}")
+        return None  # ✅ prevents UnboundLocalError
 
-    return df
 
 def side_bar():
     with st.sidebar:
